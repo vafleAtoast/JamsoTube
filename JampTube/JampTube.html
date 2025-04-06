@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JampTube - Troll edice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #0f0f0f;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: #1f1f1f;
+      border-bottom: 1px solid #333;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo img {
+      height: 40px;
+      border-radius: 8px;
+    }
+
+    .logo span {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ff0000;
+    }
+
+    .channel {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .channel img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .channel-name {
+      font-size: 1rem;
+    }
+
+    .main {
+      padding: 2rem;
+      background-color: #000000;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2rem;
+      flex-grow: 1;
+    }
+
+    .video-card {
+      background-color: #1a1a1a;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s ease;
+      position: relative;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+    }
+
+    .video-card:hover {
+      transform: scale(1.02);
+    }
+
+    .thumbnail {
+      width: 100%;
+      display: block;
+    }
+
+    .video-info {
+      padding: 0.8rem;
+    }
+
+    .video-title {
+      font-size: 1rem;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+    }
+
+    .video-channel {
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 50;
+    }
+
+    #video-player-container {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      width: 80%;
+      max-width: 1200px;
+      height: 70%;
+      background-color: #000;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    #video-player {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .hide-thumbnail {
+      display: none;
+    }
+
+    #channel-modal {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #222;
+      color: white;
+      padding: 2rem;
+      width: 80%;
+      max-width: 400px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
+      z-index: 200;
+    }
+
+    #channel-modal.active {
+      display: block;
+    }
+
+    #channel-modal .modal-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+
+    #channel-modal .modal-subtitle {
+      font-size: 1.2rem;
+      color: #aaa;
+      margin-bottom: 1rem;
+    }
+
+    #channel-modal .modal-description {
+      font-size: 1rem;
+    }
+
+    #channel-modal .close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: white;
+      background: transparent;
+      border: none;
+    }
+
+    footer {
+      background-color: #1f1f1f;
+      color: #aaa;
+      padding: 1rem 0;
+      text-align: center;
+      font-size: 1rem;
+      margin-top: auto;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+    }
+
+    footer .trademark {
+      font-size: 0.9rem;
+      color: #bbb;
+      opacity: 0.7;
+    }
+
+    footer .trademark span {
+      color: #ff0000;
+      font-weight: bold;
+    }
+
+    /* Úpravy pro rámeček kolem videa */
+    .video-card {
+      background-color: #1a1a1a;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s ease;
+      position: relative;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+    }
+
+    .video-card .thumbnail {
+      margin: 0;
+    }
+
+    .video-card .video-info {
+      background-color: #222;
+      padding: 1rem;
+    }
+
+    .video-card .video-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .video-card .video-channel {
+      font-size: 1rem;
+      color: #aaa;
+    }
+
+    /* Úpravy pro přehrávač */
+    #video-player-container {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      width: 80%;
+      max-width: 1200px;
+      height: 70%;
+      background-color: #000;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    /* Rámeček pod videem */
+    .video-card .video-info {
+      background-color: #222;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <img src="omg.png" alt="logo">
+      <span>JampTube</span>
+    </div>
+    <div class="channel" onclick="toggleModal()">
+      <img src="omg.png" alt="avatar">
+      <div class="channel-name">JampiCZ</div>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- Video 1: Rickroll - Přehrávač na YouTube -->
+    <div class="video-card" onclick="window.location.href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'">
+      <img class="thumbnail" src="noFilter.webp" alt="Obří kamenní monstrum..!">
+      <div class="video-info">
+        <div class="video-title">Obří kamenní monstrum..!</div>
+        <div class="video-channel">JampiCZ • 1,2 mil. zhlédnutí • před 3 dny</div>
+      </div>
+    </div>
+
+    <!-- Video 2: EggWars - Přehrávač na stránce -->
+    <div class="video-card" onclick="playVideo('https://www.youtube.com/embed/9G77D29Uckw?autoplay=1')">
+      <img class="thumbnail" src="randomicek.png" alt="EggWars thumbnail">
+      <div class="video-info">
+        <div class="video-title">EGGWARS Z BUDOUCNOSTI..!😯</div>
+        <div class="video-channel">JampiCZ • 900 tis. zhlédnutí • před 2 dny</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Player Container -->
+  <div id="video-player-container">
+    <iframe id="video-player" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
+  </div>
+
+  <div id="overlay"></div>
+
+  <!-- Modální okno pro kanál -->
+  <div id="channel-modal">
+    <button class="close" onclick="toggleModal()">×</button>
+    <div class="modal-title">JampiCZ</div>
+    <div class="modal-subtitle">107&nbsp;000 odběratelů</div>
+    <div class="modal-description">
+      Ahoj! Vítám tě na mém kanálu JampiCZ, kde najdeš vlogy, zábavu, techniku, výzvy a spoustu originálního obsahu. Pokud se ti líbí, co dělám, nezapomeň dát odběr a zapnout si notifikace! 🚀
+    </div>
+  </div>
+
+  <footer>
+    <div class="trademark">
+      <span>JampTube</span> &copy; 2025 | Všechna práva vyhrazena.
+    </div>
+  </footer>
+
+  <script>
+    function toggleModal() {
+      const modal = document.getElementById('channel-modal');
+      modal.classList.toggle('active');
+    }
+
+    window.addEventListener('click', function(e) {
+      const modal = document.getElementById('channel-modal');
+      const channel = document.querySelector('.channel');
+      if (!modal.contains(e.target) && !channel.contains(e.target)) {
+        modal.classList.remove('active');
+      }
+    });
+
+    function playVideo(videoUrl) {
+      const videoContainer = document.getElementById('video-player-container');
+      const videoPlayer = document.getElementById('video-player');
+      const overlay = document.getElementById('overlay');
+      const thumbnails = document.querySelectorAll('.thumbnail');
+
+      // Skrýt miniatury
+      thumbnails.forEach(thumb => thumb.classList.add('hide-thumbnail'));
+
+      // Zobrazí video přehrávač
+      videoContainer.style.display = 'block';
+      overlay.style.display = 'block';
+
+      // Načte video
+      videoPlayer.src = videoUrl;
+
+      // Ztmaví pozadí
+      overlay.addEventListener('click', function() {
+        stopVideo();
+      });
+    }
+
+    function stopVideo() {
+      const videoContainer = document.getElementById('video-player-container');
+      const videoPlayer = document.getElementById('video-player');
+      const thumbnails = document.querySelectorAll('.thumbnail');
+      const overlay = document.getElementById('overlay');
+
+      // Zastaví video a skryje přehrávač
+      videoPlayer.src = '';
+      videoContainer.style.display = 'none';
+      overlay.style.display = 'none';
+
+      // Ukáže zpět miniatury
+      thumbnails.forEach(thumb => thumb.classList.remove('hide-thumbnail'));
+    }
+  </script>
+</body>
+</html>
